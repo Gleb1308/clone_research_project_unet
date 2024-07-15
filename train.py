@@ -84,7 +84,7 @@ if __name__=="__main__":
                                                    help='from here will be generated batches of images for training')
   parser.add_argument('--path_img_test', type=str, default="small-subset-of-airbus-ship-segmentation-dataset/test_v2/",
                                                    help='from here will be generated batches of images for testing')
-  parser.add_argument('--path_img_val', type=str, default="small-subset-of-airbus-ship-segmentation-dataset/test_v2/",
+  parser.add_argument('--path_img_val', type=str, default="small-subset-of-airbus-ship-segmentation-dataset/val_v2/",
                                                    help='from here will be generated batches of images for validation')
   parser.add_argument('--best_path_save', type=str, default="./checkpoints/my_checkpoint",
                                                     help='here will be saved best weights of the trained model')

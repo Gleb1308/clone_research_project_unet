@@ -32,7 +32,7 @@ def train(y_group, epochs, img_height, img_width, batch_size, checkpoint_path_lo
     traingen = CustomDataGen(y_group, path_img_train, batch_size, use_bool=False, resize=True, height=img_height, width=img_width)
     valgen = CustomDataGen(y_group, path_img_val, batch_size, use_bool=False, resize=True, height=img_height, width=img_width)
     if save_weights:
-      cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=best_path_save, verbose=1, save_weights_only=True, save_best_only=True, monitor='Dice_score', 
+      cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=best_path_save, verbose=1, save_weights_only=True, save_best_only=True, monitor='val_Dice_score', 
                                                        mode='max')
       model_history = unet.fit(traingen, epochs=EPOCHS, callbacks=[cp_callback], validation_data=valgen)
     else:
@@ -40,11 +40,17 @@ def train(y_group, epochs, img_height, img_width, batch_size, checkpoint_path_lo
     if save_plot:
       fig, axs = plt.subplots(1, 2, figsize=(12, 6))
       train_loss = model_history.history['loss']
+      val_loss = model_history.history['val_loss']
       train_metric = model_history.history['Dice_score']
-      axs[0].plot(train_loss)
-      axs[0].set_title('Train loss')
-      axs[1].plot(train_metric)
-      axs[1].set_title('Train metric')
+      val_metric = model_history.history['val_Dice_score']
+      axs[0].plot(train_loss, label='train_loss')
+      axs[0].plot(val_loss, label='val_loss')
+      axs[0].legend()
+      axs[0].set_title('Loss')
+      axs[1].plot(train_metric, label='train_metric')
+      axs[1].plot(val_metric, label='val_metric')
+      axs[1].legend()
+      axs[1].set_title('Metric')
       plt.show()
       dir_plot = os.path.dirname(plot_path_save)
       os.makedirs(dir_plot, exist_ok=True)

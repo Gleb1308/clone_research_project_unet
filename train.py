@@ -34,9 +34,9 @@ def train(y_group, epochs, img_height, img_width, batch_size, checkpoint_path_lo
     if save_weights:
       cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=best_path_save, verbose=1, save_weights_only=True, save_best_only=True, monitor='Dice_score', 
                                                        mode='max')
-      model_history = unet.fit(traingen, epochs=EPOCHS, callbacks=[cp_callback])
+      model_history = unet.fit(traingen, epochs=EPOCHS, callbacks=[cp_callback], validation_data=valgen)
     else:
-      model_history = unet.fit(traingen, epochs=EPOCHS)
+      model_history = unet.fit(traingen, epochs=EPOCHS, validation_data=valgen)
     if save_plot:
       fig, axs = plt.subplots(1, 2, figsize=(12, 6))
       train_loss = model_history.history['loss']

@@ -10,7 +10,7 @@ from Model_data.model import unet_model
 from Model_data.data_generator import CustomDataGen
 from Loss_metric.metric import Dice_score
 
-def train(y_group, epochs, img_height, img_width, batch_size, checkpoint_path_load, path_img_train, path_img_test, best_path_save, final_path_save, 
+def train(y_group, epochs, img_height, img_width, batch_size, checkpoint_path_load, path_img_train, path_img_val, path_img_test, best_path_save, final_path_save, 
           plot_path_save, save_weights, use_pretrained, save_plot, eval_only, **model_params):
 
   num_channels = 3
@@ -30,9 +30,13 @@ def train(y_group, epochs, img_height, img_width, batch_size, checkpoint_path_lo
   if not eval_only:
     # training the model using data generator
     traingen = CustomDataGen(y_group, path_img_train, batch_size, use_bool=False, resize=True, height=img_height, width=img_width)
-    cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=best_path_save, verbose=1, save_weights_only=True, save_best_only=True, monitor='Dice_score', 
-                                                     mode='max')
-    model_history = unet.fit(traingen, epochs=EPOCHS, callbacks=[cp_callback])
+    valgen = CustomDataGen(y_group, path_img_val, batch_size, use_bool=False, resize=True, height=img_height, width=img_width)
+    if save_weights:
+      cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=best_path_save, verbose=1, save_weights_only=True, save_best_only=True, monitor='Dice_score', 
+                                                       mode='max')
+      model_history = unet.fit(traingen, epochs=EPOCHS, callbacks=[cp_callback])
+    else:
+      model_history = unet.fit(traingen, epochs=EPOCHS)
     if save_plot:
       fig, axs = plt.subplots(1, 2, figsize=(12, 6))
       train_loss = model_history.history['loss']
@@ -80,6 +84,8 @@ if __name__=="__main__":
                                                    help='from here will be generated batches of images for training')
   parser.add_argument('--path_img_test', type=str, default="small-subset-of-airbus-ship-segmentation-dataset/test_v2/",
                                                    help='from here will be generated batches of images for testing')
+  parser.add_argument('--path_img_val', type=str, default="small-subset-of-airbus-ship-segmentation-dataset/test_v2/",
+                                                   help='from here will be generated batches of images for validation')
   parser.add_argument('--best_path_save', type=str, default="./checkpoints/my_checkpoint",
                                                     help='here will be saved best weights of the trained model')
   parser.add_argument('--final_path_save', type=str, default="./checkpoints/my_checkpoint",
@@ -102,5 +108,5 @@ if __name__=="__main__":
   y_group = y_group.str.split(' ') 
   # call train() with all arguments; it will return the model, history of training loss and metric, loss and dice score on the test data
   unet, hist, loss, dice_score = train(y_group, args.epochs, args.img_height, args.img_width, args.batch_size, args.checkpoint_path_load, args.path_img_train, 
-                                       args.path_img_test, args.best_path_save, args.final_path_save, args.plot_path_save, args.save_weights, 
+                                       args.path_img_val, args.path_img_test, args.best_path_save, args.final_path_save, args.plot_path_save, args.save_weights, 
                                        args.use_pretrained, args.save_plot, args.eval_only, drop_prob=args.drop_prob)
